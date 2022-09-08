@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * leetcode : https://leetcode.com/problems/binary-tree-inorder-traversal/
+ * 난이도 : easy
  */
 public class BinaryTreeInorder {
 

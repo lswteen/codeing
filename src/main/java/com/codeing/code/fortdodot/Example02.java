@@ -1,8 +1,6 @@
 package com.codeing.code.fortdodot;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  *
@@ -62,112 +60,134 @@ import java.util.stream.IntStream;
  * * * *
  */
 public class Example02 {
-    public String[] solution(String[] card, String[] word) {
-        List<String> answer = new ArrayList<>();
-
-        for (String targetWord : word) {
-            boolean canBeConstructed = true;
-
-            for (int i = 0; i < 3; i++) {
-                String cardLine = card[i];
-                String target = targetWord;
-                for (int j = 0; j < cardLine.length(); j++) {
-                    target = target.replaceFirst(Character.toString(cardLine.charAt(j)), "");
-                }
-
-                if (i < 2 && target.length() > 0) {
-                    canBeConstructed = false;
-                    break;
-                }
-            }
-
-            if (canBeConstructed && targetWord.length() == 0) {
-                answer.add(targetWord);
-            }
-        }
-
-        if (answer.isEmpty()) {
-            answer.add("-1");
-        }
-
-        return answer.toArray(new String[0]);
-    }
+//    public static String[] solution(String[] card, String[] word) {
+//        //card 배열 3개를 모두 loop로 돌린다.
+//
+//        //word 문자열배열 순환 루프한다. card 3개 배열에 모두포함하는지 확인한다
+//        //word에 문자열이 card 배열에 index1, index2 ,index3 에 모두포함되어있는지 확인한다.
+//        //word에 문자열이 card배열 조건에 부합한다면
+//        //answer String[] 추가한다.
+//        //포함되어있지 않다면 -1로 추가한다.
+//
+//
+//
+//        return null;
+//    }
 
 
+    public static String[] solution(String[] card, String[] word) {
+        ArrayList<String> answerList = new ArrayList<>();
+        boolean hasFailed = false;
+        boolean hasSucceeded = false;
 
-    public String[] solution1(String[] card, String[] word) {
-        int[][] count = new int[3][26]; // 각 줄에서 사용 가능한 알파벳의 개수
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 8; j++) {
-                char c = card[i].charAt(j);
-                count[i][c - 'A']++; // 해당 알파벳의 개수 증가
-            }
-        }
-        String[] answer = new String[word.length];
-        for (int i = 0; i < word.length; i++) {
-            int[] needs = new int[26]; // 필요한 알파벳의 개수
-            for (int j = 0; j < word[i].length(); j++) {
-                char c = word[i].charAt(j);
-                needs[c - 'A']++; // 해당 알파벳의 필요한 개수 증가
-            }
-            boolean canMake = true;
-            for (int j = 0; j < 26; j++) {
-                if (needs[j] > count[0][j] + count[1][j] + count[2][j]) {
-                    canMake = false; // 필요한 알파벳의 개수보다 사용 가능한 개수가 적으면 만들 수 없음
-                    break;
-                }
-            }
-            if (canMake) {
-                answer[i] = word[i];
+        for (String w : word) {
+            if (isWordInCards(card, w)) {
+                answerList.add(w);
+                hasSucceeded = true;
             } else {
-                answer[i] = "-1";
+                hasFailed = true;
             }
         }
+
+        if (!hasSucceeded && hasFailed) {
+            answerList.add("-1");
+        }
+
+        String[] answer = new String[answerList.size()];
+        answerList.toArray(answer);
         return answer;
     }
 
-    public String[] solution4(String[] card, String[]word){
-        Set<Character> characterSet = new LinkedHashSet<>();
+//    private static boolean isWordInCards(String[] card, String word) {
+//        int[] cardCount = new int[26];
+//        int[] wordCount = new int[26];
+//        boolean[] cardUsed = new boolean[3];
+//
+//        for (char ch : word.toCharArray()) {
+//            wordCount[ch - 'A']++;
+//        }
+//
+//        for (int i = 0; i < card.length; i++) {
+//            String c = card[i];
+//            for (char ch : c.toCharArray()) {
+//                cardCount[ch - 'A']++;
+//            }
+//
+//            for (int j = 0; j < 26; j++) {
+//                if (wordCount[j] > 0 && cardCount[j] > 0) {
+//                    int minCount = Math.min(wordCount[j], cardCount[j]);
+//                    wordCount[j] -= minCount;
+//                    cardCount[j] -= minCount;
+//                    cardUsed[i] = true;
+//                }
+//            }
+//        }
+//
+//        for (int count : wordCount) {
+//            if (count > 0) {
+//                return false;
+//            }
+//        }
+//
+//        for (boolean used : cardUsed) {
+//            if (!used) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
-        // 중복을 제거하지 않은 문자열 집합 생성
-        for (String cardItem : card) {
-            for (char c : cardItem.toCharArray()) {
-                characterSet.add(c);
-            }
+
+    private static boolean isWordInCards(String[] card, String word) {
+        Map<Character, Integer> cardCount = new HashMap<>();
+        Map<Character, Integer> wordCount = new HashMap<>();
+        boolean[] cardUsed = new boolean[3];
+
+        for (char ch : word.toCharArray()) {
+            wordCount.put(ch, wordCount.getOrDefault(ch, 0) + 1);
         }
 
-        // 각각의 word 문자열을 확인하며 조합 가능한지 확인
-        ArrayList<String> answerList = new ArrayList<>();
-        for (String wordItem : word) {
-            boolean canMakeWord = true;
-            for (char c : wordItem.toCharArray()) {
-                if (!characterSet.contains(c)) {
-                    canMakeWord = false;
-                    break;
+        for (int i = 0; i < card.length; i++) {
+            String c = card[i];
+            for (char ch : c.toCharArray()) {
+                cardCount.put(ch, cardCount.getOrDefault(ch, 0) + 1);
+            }
+
+            for (char ch : wordCount.keySet()) {
+                if (wordCount.get(ch) > 0 && cardCount.getOrDefault(ch, 0) > 0) {
+                    int minCount = Math.min(wordCount.get(ch), cardCount.get(ch));
+                    wordCount.put(ch, wordCount.get(ch) - minCount);
+                    cardCount.put(ch, cardCount.get(ch) - minCount);
+                    cardUsed[i] = true;
                 }
             }
-            if (canMakeWord) {
-                answerList.add(wordItem);
+        }
+
+        for (int count : wordCount.values()) {
+            if (count > 0) {
+                return false;
             }
         }
 
-        // 결과 출력
-        System.out.println("조합 가능한 문자열:");
-        for (String ans : answerList) {
-            System.out.println(ans);
+        for (boolean used : cardUsed) {
+            if (!used) {
+                return false;
+            }
         }
-        return answerList.toArray(new String[0]);
+
+        return true;
     }
 
     public static void main(String[] args) {
         Example02 solution = new Example02();
         String[] card = {"ABACDEFG", "NOPQRSTU", "HIJKLMKM"};
-        String[] word = {"GPQM", "GPMZ", "EFU", "MMNA"};
+        String[] word = {"GPQM", "GPMZ", "EFU", "MMNA", "AASH", "AAANH"};
 
 //        String[] card = {"AABBCCDD", "KKKKJJJJ", "MOMOMOMO"};
 //        String[] word = {"AAAKKKKKMMMMM", "ABCDKJ"};
 
-        String[] result = solution.solution4(card, word);
+        String[] result = solution.solution(card, word);
         System.out.println(Arrays.toString(result)); // 기대 출력: [GPQM, MMNA]
     }
 }

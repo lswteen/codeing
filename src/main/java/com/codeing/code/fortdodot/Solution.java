@@ -29,50 +29,55 @@ import java.util.*;
  */
 public class Solution {
 
+    /**
+     * 이 문제에서는 이진 트리 형태의 주차장에서 두 대의 차량이 서로의 입구/출구 경로를 막지 않는 방법의 수를 찾아야 합니다.
+     *
+     * 이 문제를 해결하기 위해, 트리의 각 서브트리에서 노드 수를 계산하는 깊이 우선 탐색 (DFS)을 수행할 수 있습니다.
+     * 그런 다음, 각 서브트리의 노드 수를 사용하여 주차장에서 서로의 길을 막지 않고 두 대의 차를 주차하는 방법의 수를 계산합니다.
+     * @param parking
+     * @return
+     */
     public long solution(int[][] parking) {
-        int n = parking.length;
-        Map<Integer, List<Integer>> map = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            if (parking[i][0] == -1 && parking[i][1] == -1) {
-                continue;
-            }
-            map.computeIfAbsent(parking[i][0], k -> new ArrayList<>()).add(i);
-            map.computeIfAbsent(parking[i][1], k -> new ArrayList<>()).add(i);
-        }
-        Set<Integer> visited = new HashSet<>();
-        Queue<Integer> queue = new LinkedList<>();
-        queue.offer(0);
-        visited.add(0);
-        int cnt = 0;
-        while (!queue.isEmpty()) {
-            int curr = queue.poll();
-            for (int i : map.getOrDefault(curr, Collections.emptyList())) {
-                if (visited.contains(i)) {
-                    continue;
-                }
-                int left = parking[i][0], right = parking[i][1];
-                if ((left == -1 || visited.contains(left)) && (right == -1 || visited.contains(right))) {
-                    visited.add(i);
-                    if (left != -1) {
-                        queue.offer(left);
-                    }
-                    if (right != -1) {
-                        queue.offer(right);
-                    }
-                    cnt++;
-                }
+        long[] count = new long[parking.length];
+
+        // 각 서브트리의 노드 수를 계산하기 위해 깊이 우선 탐색 (DFS)을 수행합니다.
+        dfs(0, count, parking);
+
+        // 주차장에서 서로의 길을 막지 않고 두 대의 차를 주차하는 방법의 수를 계산합니다.
+        long answer = 0;
+        for (int i = 0; i < parking.length; i++) {
+            if (parking[i][0] != -1 && parking[i][1] != -1) {
+                answer += count[parking[i][0]] * count[parking[i][1]];
             }
         }
-        return cnt == n - 1 ? (long) n * (n - 1) / 2 - cnt : 0;
+
+        return answer;
     }
 
+    // 깊이 우선 탐색 함수로, 각 서브트리의 노드 수를 계산합니다.
+    private void dfs(int node, long[] count, int[][] parking) {
+        count[node] = 1;
+
+        for (int child : parking[node]) {
+            if (child != -1) {
+                dfs(child, count, parking);
+                count[node] += count[child];
+            }
+        }
+    }
 
     public static void main(String[] args) {
-        int[][] parking = {{1, 2}, {3, 4}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
         Solution solution = new Solution();
-        long count = solution.solution(parking);
-        System.out.println(count);  // expected output: 4
+
+        int[][] parking1 = {{1, 2}, {3, 4}, {-1, -1}, {-1, -1}, {-1, -1}};
+        long result1 = solution.solution(parking1);
+        System.out.println(result1);  // answer: 4
+
+        int[][] parking2 = {{1, 2}, {3, 4}, {5, 6}, {-1, 7}, {8, 9}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+        long result2 = solution.solution(parking2);
+        System.out.println(result2);  // answer: 26
     }
+
 
 
 }
